@@ -151,6 +151,13 @@ class HandPosition:
         self._ensure_is_valid()
         return Guitar.get_notes(self)
 
+    def has_some_overlapping_of_notes(self) -> bool:
+        notes = self.get_notes()
+        for i in range(len(notes) - 1):
+            if notes[i] > notes[i + 1]:
+                return True
+        return False
+
     def _ensure_is_valid(self) -> None:
         if not self.is_valid():
             raise Exception("This isn't a valid hand-position.")
@@ -373,7 +380,11 @@ def generate_all_potential_hand_positions(
 def filter_out_unreasonable_hand_positions(
     hand_positions: Set[HandPosition],
 ) -> Set[HandPosition]:
-    return {hp for hp in hand_positions if hp.is_valid()}
+    return {
+        hp
+        for hp in hand_positions
+        if hp.is_valid() and not hp.has_some_overlapping_of_notes()
+    }
 
 
 def generate_all_hand_positions(number_of_frets_to_consider: int) -> Set[HandPosition]:
