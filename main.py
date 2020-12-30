@@ -70,7 +70,7 @@ def main():
 
     print(instances)
 
-    with open("solutions-open-strings.txt", "w") as f:
+    with open("solutions.txt", "w") as f:
         for solution in organised_solutions:
             f.write(f"{str(solution)}\n")
 
@@ -82,10 +82,7 @@ def organise_pairs_and_order_them(
         pair.organise_with_lowest_hand_first() for pair in pairs_of_hand_positions
     ]
 
-    for pair in pairs_with_the_lowest_always_first:
-        print(pair)
-
-    return pairs_with_the_lowest_always_first
+    return sorted(pairs_with_the_lowest_always_first)
 
 
 if __name__ == "__main__":

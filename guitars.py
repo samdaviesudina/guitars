@@ -33,9 +33,6 @@ class Note:
     def from_pitch(cls, pitch: int) -> Note:
         return Note(pitch, pitch % 12)
 
-    def same_scale_degree(self, other: Note) -> bool:
-        return self.scale_degree == other.scale_degree
-
     @property
     def name(self) -> str:
         return self.NOTE_NUMBER_TO_NAME[self.scale_degree]
@@ -202,6 +199,7 @@ class Guitar:
         )
 
 
+@total_ordering
 @dataclass(frozen=True)
 class PairOfHandPositions:
     first_hand_position: HandPosition
@@ -222,6 +220,19 @@ class PairOfHandPositions:
             other.second_hand_position,
         }
 
+    def __lt__(self, other: PairOfHandPositions) -> bool:
+        if not isinstance(other, PairOfHandPositions):
+            return NotImplemented
+
+        if self.get_lowest_note() < other.get_lowest_note():
+            return True
+
+        if self.get_lowest_note() == other.get_lowest_note():
+            if self.get_highest_note() < other.get_highest_note():
+                return True
+
+        return False
+
     def __repr__(self) -> str:
         return (
             f"{str(self.first_hand_position.get_notes())},"
@@ -239,6 +250,18 @@ class PairOfHandPositions:
             *self.first_hand_position.get_open_strings(),
             *self.second_hand_position.get_open_strings(),
         }
+
+    def get_lowest_note(self) -> Note:
+        return min(
+            self.first_hand_position.get_lowest_note(),
+            self.second_hand_position.get_lowest_note(),
+        )
+
+    def get_highest_note(self) -> Note:
+        return max(
+            self.first_hand_position.get_highest_note(),
+            self.second_hand_position.get_highest_note(),
+        )
 
     def organise_with_lowest_hand_first(self) -> PairOfHandPositions:
         if self.first_hand_position.lowest_note_is_lower(self.second_hand_position):
