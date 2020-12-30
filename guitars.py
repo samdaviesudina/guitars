@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import total_ordering
 from typing import Any, FrozenSet, Generator, List, Optional, Set
 
 NUMBER_OF_FINGERS_TO_CONSIDER = 4
 MAXIMUM_SPAN_OF_FRETS = 3
 
 
+@total_ordering
 @dataclass(frozen=True)
 class Note:
-    NOTE_TO_NAME = {
+    NOTE_NUMBER_TO_NAME = {
         0: "C",
         1: "C#",
         2: "D",
@@ -24,18 +26,27 @@ class Note:
         11: "B",
     }
 
-    number: int
+    pitch: int
+    scale_degree: int
 
     @classmethod
-    def from_number_not_modded_out(cls, number_not_modded_out: int) -> Note:
-        return Note(number_not_modded_out % 12)
+    def from_pitch(cls, pitch: int) -> Note:
+        return Note(pitch, pitch % 12)
+
+    def same_scale_degree(self, other: Note) -> bool:
+        return self.scale_degree == other.scale_degree
 
     @property
     def name(self) -> str:
-        return self.NOTE_TO_NAME[self.number]
+        return self.NOTE_NUMBER_TO_NAME[self.scale_degree]
 
     def transpose_upwards_by(self, semitones: int) -> Note:
-        return Note.from_number_not_modded_out(self.number + semitones)
+        return Note.from_pitch(self.pitch + semitones)
+
+    def __lt__(self, other: Note) -> bool:
+        if not isinstance(other, Note):
+            return NotImplemented
+        return self.pitch < other.pitch
 
     def __repr__(self) -> str:
         return self.name
@@ -43,19 +54,19 @@ class Note:
 
 @dataclass(frozen=True)
 class String:
-    STRING_TO_NOTE = {
-        1: Note(4),
-        2: Note(11),
-        3: Note(7),
-        4: Note(2),
-        5: Note(9),
-        6: Note(4),
+    STRING_NUMBER_TO_NOTE = {
+        1: Note.from_pitch(28),
+        2: Note.from_pitch(23),
+        3: Note.from_pitch(19),
+        4: Note.from_pitch(14),
+        5: Note.from_pitch(9),
+        6: Note.from_pitch(4),
     }
     number: int
 
     @property
     def _open_string_note(self) -> Note:
-        return self.STRING_TO_NOTE[self.number]
+        return self.STRING_NUMBER_TO_NOTE[self.number]
 
     def note(self, fret: Optional[Fret] = None) -> Note:
         if fret is None:
@@ -69,10 +80,19 @@ class String:
 
 @dataclass(frozen=True)
 class Fret:
+    ROMAN_NUMERALS = {
+        1: "I",
+        2: "II",
+        3: "III",
+        4: "IV",
+        5: "V",
+        6: "VI",
+    }
+
     number: int
 
     def __repr__(self) -> str:
-        return f"fret {self.number + 1}"
+        return self.ROMAN_NUMERALS[self.number + 1]
 
 
 @dataclass(frozen=True)
@@ -151,6 +171,15 @@ class HandPosition:
         self._ensure_is_valid()
         return Guitar.get_open_strings(self)
 
+    def get_highest_note(self) -> Note:
+        return sorted(self.get_notes(), reverse=True)[0]
+
+    def get_lowest_note(self) -> Note:
+        return sorted(self.get_notes())[0]
+
+    def lowest_note_is_lower(self, other: HandPosition) -> bool:
+        return self.get_lowest_note() < other.get_lowest_note()
+
 
 class Guitar:
     STRINGS = [String(6), String(5), String(4), String(3), String(2), String(1)]
@@ -182,7 +211,7 @@ class PairOfHandPositions:
         all_notes = (
             self.first_hand_position.get_notes() + self.second_hand_position.get_notes()
         )
-        return len(set(all_notes)) == 12
+        return len(set([note.scale_degree for note in all_notes])) == 12
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, PairOfHandPositions):
@@ -211,17 +240,10 @@ class PairOfHandPositions:
             *self.second_hand_position.get_open_strings(),
         }
 
-    def display_open_strings(self) -> str:
-        open_strings_from_first_guitar = ", ".join(
-            [str(string) for string in self.first_hand_position.get_open_strings()]
-        )
-        open_strings_from_second_guitar = ", ".join(
-            [str(string) for string in self.second_hand_position.get_open_strings()]
-        )
-        return (
-            f"Open strings: {open_strings_from_first_guitar}"
-            f" and {open_strings_from_second_guitar}"
-        )
+    def organise_with_lowest_hand_first(self) -> PairOfHandPositions:
+        if self.first_hand_position.lowest_note_is_lower(self.second_hand_position):
+            return self
+        return PairOfHandPositions(self.second_hand_position, self.first_hand_position)
 
 
 def generate_all_placements(number_of_frets_to_consider: int) -> List[Placement]:
