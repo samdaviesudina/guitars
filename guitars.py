@@ -205,6 +205,12 @@ class PairOfHandPositions:
             or hand_position == self.second_hand_position
         )
 
+    def get_all_open_strings(self) -> Set[String]:
+        return {
+            *self.first_hand_position.get_open_strings(),
+            *self.second_hand_position.get_open_strings(),
+        }
+
     def display_open_strings(self) -> str:
         open_strings_from_first_guitar = ", ".join(
             [str(string) for string in self.first_hand_position.get_open_strings()]
@@ -333,3 +339,14 @@ def work_out_successful_pairs_of_hand_positions(
                 if not already_found:
                     successful_hand_positions.add(pair)
     return successful_hand_positions
+
+
+def filter_out_solutions_without_the_right_open_strings(
+    solutions: List[PairOfHandPositions],
+    desired_open_strings: Set[String],
+) -> List[PairOfHandPositions]:
+    return [
+        pair
+        for pair in solutions
+        if pair.get_all_open_strings() == desired_open_strings
+    ]

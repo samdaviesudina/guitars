@@ -2,7 +2,9 @@ from collections import defaultdict
 
 from guitars import (
     filter_out_hand_positions_with_repeated_notes,
+    filter_out_solutions_without_the_right_open_strings,
     generate_all_hand_positions,
+    String,
     work_out_successful_pairs_of_hand_positions,
 )
 
@@ -64,5 +66,35 @@ def main():
             f.write(f"{str(solution)} {solution.display_open_strings()}.\n")
 
 
+def main_open_strings():
+    all_hand_positions = generate_all_hand_positions(NUMBER_OF_FRETS_TO_CONSIDER)
+    print(f"Found {len(all_hand_positions)} hand-positions.")
+    if not all_hand_positions:
+        print("That seems odd. Terminating.")
+        return
+
+    hand_positions_with_no_repeated_notes = (
+        filter_out_hand_positions_with_repeated_notes(all_hand_positions)
+    )
+    print(
+        f"Found {len(hand_positions_with_no_repeated_notes)}"
+        " hand-positions which lead to no repeated notes."
+    )
+
+    solutions = filter_out_solutions_without_the_right_open_strings(
+        work_out_successful_pairs_of_hand_positions(
+            hand_positions_with_no_repeated_notes
+        ),
+        {String(i) for i in range(2, 7)},
+    )
+
+    print(f"Found {len(solutions)} solution-pairs.")
+
+    with open("solutions-open-strings.txt", "w") as f:
+        for solution in solutions:
+            f.write(f"{str(solution)}.\n")
+
+
 if __name__ == "__main__":
     main()
+    main_open_strings()
