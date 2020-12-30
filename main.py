@@ -70,9 +70,11 @@ def main():
 
     print(instances)
 
+    line_number = 0
     with open("solutions.txt", "w") as f:
         for solution in organised_solutions:
-            f.write(f"{str(solution)} ({solution.display_frets()})\n")
+            line_number += 1
+            f.write(f"{line_number} {str(solution)} ({solution.display_frets()})\n")
 
 
 def organise_pairs_and_order_them(
