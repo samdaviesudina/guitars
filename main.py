@@ -72,7 +72,7 @@ def main():
 
     with open("solutions.txt", "w") as f:
         for solution in organised_solutions:
-            f.write(f"{str(solution)}\n")
+            f.write(f"{str(solution)} ({solution.display_frets()})\n")
 
 
 def organise_pairs_and_order_them(

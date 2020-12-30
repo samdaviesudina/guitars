@@ -91,6 +91,11 @@ class Fret:
     def __repr__(self) -> str:
         return self.ROMAN_NUMERALS[self.number + 1]
 
+    def __lt__(self, other: Fret) -> bool:
+        if not isinstance(other, Fret):
+            return NotImplemented
+        return self.number < other.number
+
 
 @dataclass(frozen=True)
 class Placement:
@@ -176,6 +181,9 @@ class HandPosition:
 
     def lowest_note_is_lower(self, other: HandPosition) -> bool:
         return self.get_lowest_note() < other.get_lowest_note()
+
+    def get_frets(self) -> Set[Fret]:
+        return {placement.fret for placement in self.placements}
 
 
 class Guitar:
@@ -267,6 +275,26 @@ class PairOfHandPositions:
         if self.first_hand_position.lowest_note_is_lower(self.second_hand_position):
             return self
         return PairOfHandPositions(self.second_hand_position, self.first_hand_position)
+
+    def display_frets(self) -> str:
+        frets_from_first = self.first_hand_position.get_frets()
+        frets_from_second = self.second_hand_position.get_frets()
+        max_from_first = max(frets_from_first)
+        min_from_first = min(frets_from_first)
+        max_from_second = max(frets_from_second)
+        min_from_second = min(frets_from_second)
+
+        if max_from_first == min_from_first:
+            range_from_first = f"{max_from_first}"
+        else:
+            range_from_first = f"{min_from_first}-{max_from_first}"
+
+        if max_from_second == min_from_second:
+            range_from_second = f"{max_from_second}"
+        else:
+            range_from_second = f"{min_from_second}-{max_from_second}"
+
+        return f"Frets {range_from_first} and {range_from_second}"
 
 
 def generate_all_placements(number_of_frets_to_consider: int) -> List[Placement]:
