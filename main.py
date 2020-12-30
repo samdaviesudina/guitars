@@ -44,6 +44,21 @@ def main():
             f" the rest ({open_string_counts[4]}) have 4."
         )
 
+    successful_hand_positions = set()
+    for solution in solutions:
+        successful_hand_positions.add(solution.first_hand_position)
+        successful_hand_positions.add(solution.second_hand_position)
+
+    instances = defaultdict(int)
+    for hand_position in successful_hand_positions:
+        count = 0
+        for solution in solutions:
+            if hand_position in solution:
+                count += 1
+        instances[count] += 1
+
+    print(instances)
+
     with open("solutions.txt", "w") as f:
         for solution in solutions:
             f.write(f"{str(solution)} {solution.display_open_strings()}.\n")

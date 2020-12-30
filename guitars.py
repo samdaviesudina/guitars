@@ -199,6 +199,12 @@ class PairOfHandPositions:
             f" {str(self.second_hand_position.get_notes())}"
         )
 
+    def __contains__(self, hand_position: HandPosition) -> bool:
+        return (
+            hand_position == self.first_hand_position
+            or hand_position == self.second_hand_position
+        )
+
     def display_open_strings(self) -> str:
         open_strings_from_first_guitar = ", ".join(
             [str(string) for string in self.first_hand_position.get_open_strings()]
