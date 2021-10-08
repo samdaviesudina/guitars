@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import total_ordering
 from typing import Any, FrozenSet, Generator, List, Optional, Set
 
 NUMBER_OF_FINGERS_TO_CONSIDER = 4
 MAXIMUM_SPAN_OF_FRETS = 3
 
 
-@total_ordering
 @dataclass(frozen=True)
 class Note:
     NOTE_NUMBER_TO_NAME = {
@@ -216,7 +214,6 @@ class Guitar:
         )
 
 
-@total_ordering
 @dataclass(frozen=True)
 class PairOfHandPositions:
     first_hand_position: HandPosition
